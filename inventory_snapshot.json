@@ -1,0 +1,121 @@
+{
+  "generated_at": "2026-10-27T17:37:43.959570+00:00",
+  "log_interval_sec": 5.0,
+  "zones": [
+    {
+      "shelf_zone": "Sprite_Zone",
+      "expected_brand": "sprite",
+      "current_stock_count": 2,
+      "empty_space_count": 0,
+      "max_capacity": 2,
+      "occupancy_pct": 100.0,
+      "misplaced_count": 0,
+      "status": "HEALTHY",
+      "depletion_rate_per_min": 0.0,
+      "est_time_to_stockout_min": null,
+      "oos_warning": false
+    },
+    {
+      "shelf_zone": "Coca_Zone",
+      "expected_brand": "coca",
+      "current_stock_count": 0,
+      "empty_space_count": 2,
+      "max_capacity": 2,
+      "occupancy_pct": 0.0,
+      "misplaced_count": 0,
+      "status": "OUT OF STOCK",
+      "depletion_rate_per_min": 4.8,
+      "est_time_to_stockout_min": 0.0,
+      "oos_warning": true
+    },
+    {
+      "shelf_zone": "Fanta_Zone",
+      "expected_brand": "fanta",
+      "current_stock_count": 1,
+      "empty_space_count": 1,
+      "max_capacity": 2,
+      "occupancy_pct": 50.0,
+      "misplaced_count": 0,
+      "status": "LOW STOCK",
+      "depletion_rate_per_min": 2.67,
+      "est_time_to_stockout_min": 0.4,
+      "oos_warning": true
+    }
+  ],
+  "warnings": [
+    {
+      "shelf_zone": "Coca_Zone",
+      "expected_brand": "coca",
+      "current_stock_count": 0,
+      "empty_space_count": 2,
+      "status": "OUT OF STOCK",
+      "depletion_rate_per_min": 4.8,
+      "est_time_to_stockout_min": 0.0
+    },
+    {
+      "shelf_zone": "Fanta_Zone",
+      "expected_brand": "fanta",
+      "current_stock_count": 1,
+      "empty_space_count": 1,
+      "status": "LOW STOCK",
+      "depletion_rate_per_min": 2.67,
+      "est_time_to_stockout_min": 0.4
+    }
+  ],
+  "timeseries": {
+    "Sprite_Zone": {
+      "timestamps": [
+        "2026-10-27T17:37:19.224363+00:00",
+        "2026-10-27T17:37:24.323930+00:00",
+        "2026-10-27T17:37:29.461495+00:00",
+        "2026-10-27T17:37:35.291480+00:00",
+        "2026-10-27T17:37:40.467547+00:00",
+        "2026-10-27T17:37:43.906570+00:00"
+      ],
+      "stock": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    "Coca_Zone": {
+      "timestamps": [
+        "2026-10-27T17:37:19.224363+00:00",
+        "2026-10-27T17:37:24.323930+00:00",
+        "2026-10-27T17:37:29.461495+00:00",
+        "2026-10-27T17:37:35.291480+00:00",
+        "2026-10-27T17:37:40.467547+00:00",
+        "2026-10-27T17:37:43.906570+00:00"
+      ],
+      "stock": [
+        2,
+        1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "Fanta_Zone": {
+      "timestamps": [
+        "2026-10-27T17:37:19.224363+00:00",
+        "2026-10-27T17:37:24.323930+00:00",
+        "2026-10-27T17:37:29.461495+00:00",
+        "2026-10-27T17:37:35.291480+00:00",
+        "2026-10-27T17:37:40.467547+00:00",
+        "2026-10-27T17:37:43.906570+00:00"
+      ],
+      "stock": [
+        2,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    }
+  }
+}

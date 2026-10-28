@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Retail: Shelf Inventory Analytics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#0f172a',
+            brandCard: '#1e293b',
+            brandBorder: '#334155'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+  <!-- Header -->
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-wrap justify-between items-center gap-4 shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600 text-white p-2 rounded-lg font-bold text-xl">🛒</div>
+      <div>
+        <h1 class="text-xl font-bold tracking-wide text-white">Smart Retail Shelf Analytics</h1>
+        <p class="text-xs text-slate-400">YOLOv8s Computer Vision &amp; Spatial Out-of-Stock Forecasting Engine</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <span id="sourceBadge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono bg-slate-700 text-slate-200 border border-slate-600">
+        📹 Source: Bevrage_Shelf.mp4
+      </span>
+      <span id="wsStatus" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2"></span> Connecting...
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Panel: Computer Vision Live Feed + Media Upload + Simulation (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col space-y-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl flex-1 flex flex-col">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span> Live Vision Stream
+          </h2>
+          <span id="modeBadge" class="text-xs text-blue-400 bg-blue-950/60 border border-blue-500/30 px-2 py-0.5 rounded font-semibold">
+            VIDEO LOOP
+          </span>
+        </div>
+
+        <div class="relative bg-black rounded-lg overflow-hidden flex-1 min-h-[280px] flex items-center justify-center border border-slate-700">
+          <img id="videoFeed" src="" alt="Waiting for vision feed..." class="w-full h-full object-contain">
+          <div id="videoOverlay" class="absolute inset-0 flex items-center justify-center bg-slate-950/80 text-slate-400 text-sm">
+            Connecting to vision engine WebSocket...
+          </div>
+        </div>
+
+        <!-- Multi-Dataset Upload Switcher (Test Any Video or Image!) -->
+        <div class="mt-4 pt-3 border-t border-slate-700">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider">Test Custom Shelf Video / Image</h3>
+            <button onclick="restoreDefaultVideo()" class="text-[11px] bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded transition">
+              ↺ Default Video
+            </button>
+          </div>
+          <label id="dropZone" class="flex flex-col items-center justify-center w-full py-3 px-4 border-2 border-dashed border-slate-600 hover:border-blue-500 rounded-lg cursor-pointer bg-slate-900/50 hover:bg-slate-900 transition">
+            <span id="uploadPrompt" class="text-xs text-slate-300 text-center">
+              📂 <strong>Click or Drag &amp; Drop</strong> any shelf <code class="text-blue-400">.mp4</code> video or <code class="text-emerald-400">.jpg/.png</code> test image
+            </span>
+            <input id="mediaInput" type="file" accept="video/*,image/*" class="hidden" onchange="handleFileSelect(this.files[0])">
+          </label>
+        </div>
+
+        <!-- Interactive Simulation Controls -->
+        <div class="mt-4 pt-3 border-t border-slate-700">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Interactive Simulation Controls</h3>
+          <div class="grid grid-cols-3 gap-2 mb-2">
+            <button onclick="sendAction('remove', 'Sprite_Zone')" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs py-2 px-1 rounded transition text-center">
+              Remove Sprite <span class="text-[10px] text-emerald-400/60 block">(Key '1')</span>
+            </button>
+            <button onclick="sendAction('remove', 'Coca_Zone')" class="bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 text-xs py-2 px-1 rounded transition text-center">
+              Remove Coca <span class="text-[10px] text-red-400/60 block">(Key '2')</span>
+            </button>
+            <button onclick="sendAction('remove', 'Fanta_Zone')" class="bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 border border-orange-500/30 text-xs py-2 px-1 rounded transition text-center">
+              Remove Fanta <span class="text-[10px] text-orange-400/60 block">(Key '3')</span>
+            </button>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="sendAction('misplace')" class="flex-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs py-2 rounded transition">
+              Toggle Misplaced <span class="text-[10px] text-amber-400/60">(Key 'm')</span>
+            </button>
+            <button onclick="sendAction('reset')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs py-2 rounded transition">
+              Reset All <span class="text-[10px] text-slate-400">(Key 'r')</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Panel: Business Analytics & KPI Cards (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col space-y-4">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Total Stock</p>
+          <p class="text-2xl font-bold text-white mt-1"><span id="kpiTotal">0/6</span></p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Avg Occupancy</p>
+          <p class="text-2xl font-bold text-emerald-400 mt-1"><span id="kpiOccupancy">0%</span></p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Peak Depletion</p>
+          <p class="text-2xl font-bold text-amber-400 mt-1"><span id="kpiDepletion">0.0</span> /min</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Active Alerts</p>
+          <p class="text-2xl font-bold text-red-400 mt-1"><span id="kpiAlerts">0</span></p>
+        </div>
+      </div>
+
+      <!-- Per-Zone Status Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-emerald-400">Sprite_Zone</h3>
+            <span id="statusSprite" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">HEALTHY</span>
+          </div>
+          <p class="text-xs text-slate-400">Stock: <span id="zoneSpriteStock" class="text-white font-semibold">0/2</span></p>
+          <p class="text-xs text-slate-400">Empty: <span id="zoneSpriteEmpty" class="text-white">0</span></p>
+          <p class="text-xs text-slate-400">Depletion: <span id="zoneSpriteRate" class="text-white">0.0</span> /min</p>
+          <p class="text-xs text-slate-400">ETSO: <span id="zoneSpriteEts" class="text-white">--</span> min</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-red-400">Coca_Zone</h3>
+            <span id="statusCoca" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">HEALTHY</span>
+          </div>
+          <p class="text-xs text-slate-400">Stock: <span id="zoneCocaStock" class="text-white font-semibold">0/2</span></p>
+          <p class="text-xs text-slate-400">Empty: <span id="zoneCocaEmpty" class="text-white">0</span></p>
+          <p class="text-xs text-slate-400">Depletion: <span id="zoneCocaRate" class="text-white">0.0</span> /min</p>
+          <p class="text-xs text-slate-400">ETSO: <span id="zoneCocaEts" class="text-white">--</span> min</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-orange-400">Fanta_Zone</h3>
+            <span id="statusFanta" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">HEALTHY</span>
+          </div>
+          <p class="text-xs text-slate-400">Stock: <span id="zoneFantaStock" class="text-white font-semibold">0/2</span></p>
+          <p class="text-xs text-slate-400">Empty: <span id="zoneFantaEmpty" class="text-white">0</span></p>
+          <p class="text-xs text-slate-400">Depletion: <span id="zoneFantaRate" class="text-white">0.0</span> /min</p>
+          <p class="text-xs text-slate-400">ETSO: <span id="zoneFantaEts" class="text-white">--</span> min</p>
+        </div>
+      </div>
+
+      <!-- Chart.js Time-Series Card -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-3">Live Inventory Time-Series</h2>
+        <div class="relative h-64">
+          <canvas id="inventoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Out-of-Stock & Planogram Warnings Feed -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-3">Active Out-of-Stock &amp; Planogram Warnings</h2>
+        <div id="warningsList" class="space-y-2 text-sm">
+          <div class="flex items-center text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+            All shelf zones healthy &amp; compliant.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const ZONE_MAP = {
+      Sprite_Zone: { status: 'statusSprite', stock: 'zoneSpriteStock', empty: 'zoneSpriteEmpty', rate: 'zoneSpriteRate', ets: 'zoneSpriteEts' },
+      Coca_Zone:   { status: 'statusCoca',   stock: 'zoneCocaStock',   empty: 'zoneCocaEmpty',   rate: 'zoneCocaRate',   ets: 'zoneCocaEts' },
+      Fanta_Zone:  { status: 'statusFanta',  stock: 'zoneFantaStock',  empty: 'zoneFantaEmpty',  rate: 'zoneFantaRate',  ets: 'zoneFantaEts' }
+    };
+
+    const ctx = document.getElementById('inventoryChart').getContext('2d');
+    const inventoryChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Sprite', data: [], borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', stepped: true, tension: 0 },
+          { label: 'Coca-Cola', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', stepped: true, tension: 0 },
+          { label: 'Fanta', data: [], borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', stepped: true, tension: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: { min: 0, max: 3, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } },
+          x: { ticks: { color: '#94a3b8', maxTicksLimit: 8 }, grid: { color: '#1e293b' } }
+        },
+        plugins: { legend: { labels: { color: '#e2e8f0' } } }
+      }
+    });
+
+    function badgeStyle(status) {
+      if (status === 'OUT OF STOCK') return 'bg-red-500/20 text-red-400 border-red-500/30';
+      if (status === 'LOW STOCK' || status === 'MISPLACED ITEM') return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    }
+
+    let ws = null;
+    function connectWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}/ws/inventory`);
+
+      ws.onopen = () => {
+        const badge = document.getElementById('wsStatus');
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span> Live Stream Active';
+      };
+
+      ws.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        if (payload.type !== 'frame') return;
+
+        if (payload.image) {
+          document.getElementById('videoOverlay').style.display = 'none';
+          document.getElementById('videoFeed').src = 'data:image/jpeg;base64,' + payload.image;
+        }
+
+        if (payload.source_name) {
+          const isImg = payload.source_mode === 'image';
+          const icon = isImg ? '🖼️' : '📹';
+          document.getElementById('sourceBadge').textContent = `${icon} Source: ${payload.source_name}`;
+          const mBadge = document.getElementById('modeBadge');
+          mBadge.textContent = isImg ? 'STATIC IMAGE' : 'VIDEO LOOP';
+          mBadge.className = isImg
+            ? 'text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-semibold'
+            : 'text-xs text-blue-400 bg-blue-950/60 border border-blue-500/30 px-2 py-0.5 rounded font-semibold';
+        }
+
+        const zones = payload.analytics || [];
+        let totalStock = 0, totalCap = 0, peakRate = 0;
+
+        zones.forEach(z => {
+          totalStock += z.current_stock_count;
+          totalCap += z.max_capacity;
+          if (z.depletion_rate_per_min > peakRate) peakRate = z.depletion_rate_per_min;
+
+          const ids = ZONE_MAP[z.shelf_zone];
+          if (ids) {
+            const stEl = document.getElementById(ids.status);
+            stEl.textContent = z.status;
+            stEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeStyle(z.status)}`;
+            document.getElementById(ids.stock).textContent = `${z.current_stock_count}/${z.max_capacity}`;
+            document.getElementById(ids.empty).textContent = z.empty_space_count;
+            document.getElementById(ids.rate).textContent = z.depletion_rate_per_min.toFixed(2);
+            document.getElementById(ids.ets).textContent = z.est_time_to_stockout_min !== null ? z.est_time_to_stockout_min : '--';
+          }
+        });
+
+        const occPct = totalCap > 0 ? Math.round((totalStock / totalCap) * 100) : 0;
+        document.getElementById('kpiTotal').textContent = `${totalStock}/${totalCap}`;
+        document.getElementById('kpiOccupancy').textContent = `${occPct}%`;
+        document.getElementById('kpiDepletion').textContent = peakRate.toFixed(2);
+
+        const warnings = payload.warnings || [];
+        document.getElementById('kpiAlerts').textContent = warnings.length;
+        const wList = document.getElementById('warningsList');
+        if (warnings.length === 0) {
+          wList.innerHTML = `<div class="flex items-center text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>All shelf zones healthy &amp; compliant.</div>`;
+        } else {
+          wList.innerHTML = warnings.map(w => {
+            const isOut = w.status === 'OUT OF STOCK';
+            const color = isOut ? 'border-red-500/40 bg-red-500/10 text-red-300' : 'border-amber-500/40 bg-amber-500/10 text-amber-300';
+            const etsTxt = w.est_time_to_stockout_min !== null ? `Est. stockout: ${w.est_time_to_stockout_min} min` : 'Immediate attention';
+            return `<div class="p-2.5 rounded-lg border ${color} flex justify-between items-center text-xs">
+              <div><strong>${w.shelf_zone}</strong>: ${w.status} (Stock: ${w.current_stock_count}, Empty: ${w.empty_space_count})</div>
+              <span class="font-mono text-[11px]">${etsTxt}</span>
+            </div>`;
+          }).join('');
+        }
+
+        if (payload.timeseries && payload.timeseries.Sprite_Zone) {
+          const ts = payload.timeseries;
+          inventoryChart.data.labels = (ts.Sprite_Zone.timestamps || []).map(t => t.slice(11, 19));
+          inventoryChart.data.datasets[0].data = ts.Sprite_Zone.stock || [];
+          inventoryChart.data.datasets[1].data = (ts.Coca_Zone && ts.Coca_Zone.stock) || [];
+          inventoryChart.data.datasets[2].data = (ts.Fanta_Zone && ts.Fanta_Zone.stock) || [];
+          inventoryChart.update('none');
+        }
+      };
+
+      ws.onclose = () => {
+        const badge = document.getElementById('wsStatus');
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400 animate-ping mr-2"></span> Reconnecting...';
+        setTimeout(connectWS, 2000);
+      };
+    }
+
+    function sendAction(action, zone = null) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action, zone }));
+      }
+    }
+
+    async function handleFileSelect(file) {
+      if (!file) return;
+      const promptEl = document.getElementById('uploadPrompt');
+      promptEl.innerHTML = `<span class="text-amber-400 animate-pulse">⏳ Uploading &amp; switching engine to <strong>${file.name}</strong>...</span>`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Upload failed');
+        promptEl.innerHTML = `<span class="text-emerald-400">✅ Active: <strong>${data.source_name}</strong> (${data.source_mode.toUpperCase()}) — Drop another file anytime</span>`;
+      } catch (err) {
+        promptEl.innerHTML = `<span class="text-red-400">❌ ${err.message}</span>`;
+      }
+    }
+
+    async function restoreDefaultVideo() {
+      const promptEl = document.getElementById('uploadPrompt');
+      try {
+        const res = await fetch('/api/source/default', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Could not restore default video');
+        document.getElementById('mediaInput').value = '';
+        promptEl.innerHTML = `📂 <strong>Click or Drag &amp; Drop</strong> any shelf <code class="text-blue-400">.mp4</code> video or <code class="text-emerald-400">.jpg/.png</code> test image`;
+      } catch (err) {
+        promptEl.innerHTML = `<span class="text-red-400">❌ ${err.message}</span>`;
+      }
+    }
+
+    // Drag & Drop support on #dropZone
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-blue-400', 'bg-slate-800');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-blue-400', 'bg-slate-800');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) handleFileSelect(files[0]);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '1') sendAction('remove', 'Sprite_Zone');
+      else if (e.key === '2') sendAction('remove', 'Coca_Zone');
+      else if (e.key === '3') sendAction('remove', 'Fanta_Zone');
+      else if (e.key.toLowerCase() === 'm') sendAction('misplace');
+      else if (e.key.toLowerCase() === 'r') sendAction('reset');
+    });
+
+    connectWS();
+  </script>
+</body>
+</html>
