@@ -33,6 +33,10 @@ Instead of stopping at raw bounding boxes, **Smart Retail Analytics** treats a c
 
 ## 🏗️ System Architecture
 
+1. **Ingestion Layer (`main.py`):** Reads frames from the default looping video (`Dataset/Bevrage_Shelf.mp4`) or any user-uploaded video/image via FastAPI.
+2. **Spatial Vision Engine (`vision_engine.py`):** Runs YOLOv8s inference in an asynchronous worker thread, maps bottle centroids to 3 vertical shelf zones, auto-calibrates capacity/brand expectations on new media uploads, and renders bounding boxes + HUD telemetry.
+3. **Time-Series Analytics Engine (`analytics_engine.py`):** Persists zone snapshots to `inventory.db` (SQLite), runs Pandas rolling window queries, computes linear regression depletion slopes, and triggers out-of-stock warnings.
+4. **Real-Time WebSocket Dashboard (`templates/index.html`):** Streams Base64-encoded video frames, KPI metrics, active warnings, and Chart.js time-series arrays over a single bi-directional WebSocket (`/ws/inventory`).
 ```text
 [Video Loop / Custom Uploaded Image]
                  │
@@ -59,6 +63,7 @@ Instead of stopping at raw bounding boxes, **Smart Retail Analytics** treats a c
 │ • Base64 MJPEG Stream + Chart.js Graphs │
 └─────────────────────────────────────────┘
 ```
+
  
 ---
 
