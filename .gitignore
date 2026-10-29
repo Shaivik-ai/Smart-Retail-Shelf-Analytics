@@ -1,16 +1,10 @@
-# Python Cache
 __pycache__/
 *.pyc
-
-# Local Databases & State
 inventory.db
 inventory_snapshot.json
-
-# Temporary Uploads
 uploads/
 step3_verification.jpg
 step4_verification.jpg
-
-# OS Junk
+null
 .DS_Store
 Thumbs.db
